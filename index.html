@@ -1,34 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐍 Colorful Snake Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🐍 贪吃蛇</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
         body {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            min-height: 100dvh;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
+            touch-action: none;
         }
 
         .game-container {
             text-align: center;
+            padding: 10px;
         }
 
         h1 {
             color: #fff;
-            font-size: 3rem;
-            margin-bottom: 10px;
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            margin-bottom: 5px;
             text-shadow: 0 0 20px #00ff88, 0 0 40px #00ff88;
             animation: glow 2s ease-in-out infinite alternate;
         }
@@ -41,28 +47,29 @@
         .score-board {
             display: flex;
             justify-content: center;
-            gap: 40px;
-            margin-bottom: 15px;
+            gap: clamp(15px, 4vw, 40px);
+            margin-bottom: 10px;
+            flex-wrap: wrap;
         }
 
         .score-item {
             background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-            padding: 10px 25px;
-            border-radius: 15px;
+            padding: 8px clamp(12px, 3vw, 25px);
+            border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.2);
             backdrop-filter: blur(10px);
         }
 
         .score-label {
             color: #888;
-            font-size: 0.9rem;
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
         }
 
         .score-value {
             color: #00ff88;
-            font-size: 2rem;
+            font-size: clamp(1.2rem, 4vw, 2rem);
             font-weight: bold;
             text-shadow: 0 0 10px #00ff88;
         }
@@ -73,70 +80,24 @@
                         inset 0 0 50px rgba(0, 0, 0, 0.5);
             background: linear-gradient(145deg, #0a0a15, #151530);
             border: 3px solid #00ff88;
-        }
-
-        .game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(145deg, rgba(0,0,0,0.95), rgba(20,20,40,0.95));
-            padding: 40px 60px;
-            border-radius: 20px;
-            border: 2px solid #ff4757;
-            box-shadow: 0 0 60px rgba(255, 71, 87, 0.5);
-            display: none;
-            z-index: 100;
-            animation: popIn 0.3s ease-out;
-        }
-
-        @keyframes popIn {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
-
-        .game-over h2 {
-            color: #ff4757;
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            text-shadow: 0 0 20px #ff4757;
-        }
-
-        .final-score {
-            color: #fff;
-            font-size: 1.5rem;
-            margin-bottom: 25px;
-        }
-
-        .final-score span {
-            color: #00ff88;
-            font-size: 2rem;
-            font-weight: bold;
-        }
-
-        .restart-btn {
-            background: linear-gradient(145deg, #00ff88, #00cc6a);
-            color: #1a1a2e;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .restart-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 30px #00ff88;
+            max-width: 100%;
+            touch-action: none;
         }
 
         .instructions {
             color: #666;
-            margin-top: 15px;
-            font-size: 0.9rem;
+            margin-top: 10px;
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .instructions {
+                display: block;
+            }
+            .mobile-controls {
+                display: none !important;
+            }
         }
 
         .instructions span {
@@ -147,9 +108,126 @@
             margin: 0 3px;
         }
 
-        /* Particle effects */
+        /* Mobile Controls */
+        .mobile-controls {
+            display: flex;
+            margin-top: 15px;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 5px;
+        }
+
+        .control-btn {
+            width: clamp(50px, 15vw, 70px);
+            height: clamp(50px, 15vw, 70px);
+            background: linear-gradient(145deg, rgba(0,255,136,0.2), rgba(0,255,136,0.1));
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #00ff88;
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            cursor: pointer;
+            transition: all 0.1s ease;
+            touch-action: manipulation;
+        }
+
+        .control-btn:active {
+            background: rgba(0,255,136,0.4);
+            transform: scale(0.95);
+            box-shadow: 0 0 20px #00ff88;
+        }
+
+        .control-btn.placeholder {
+            visibility: hidden;
+        }
+
+        .start-hint {
+            color: #00ff88;
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
+            margin-top: 15px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+        }
+
+        .game-over-content {
+            background: linear-gradient(145deg, rgba(0,0,0,0.95), rgba(20,20,40,0.95));
+            padding: clamp(25px, 6vw, 40px) clamp(30px, 8vw, 60px);
+            border-radius: 20px;
+            border: 2px solid #ff4757;
+            box-shadow: 0 0 60px rgba(255, 71, 87, 0.5);
+            text-align: center;
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .game-over h2 {
+            color: #ff4757;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px #ff4757;
+        }
+
+        .final-score {
+            color: #fff;
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            margin-bottom: 25px;
+        }
+
+        .final-score span {
+            color: #00ff88;
+            font-size: clamp(1.3rem, 4vw, 2rem);
+            font-weight: bold;
+        }
+
+        .restart-btn {
+            background: linear-gradient(145deg, #00ff88, #00cc6a);
+            color: #1a1a2e;
+            border: none;
+            padding: clamp(12px, 3vw, 15px) clamp(30px, 8vw, 40px);
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .restart-btn:active {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px #00ff88;
+        }
+
         .particle {
-            position: absolute;
+            position: fixed;
             pointer-events: none;
             border-radius: 50%;
             animation: particleFade 1s ease-out forwards;
@@ -163,38 +241,74 @@
 </head>
 <body>
     <div class="game-container">
-        <h1>🐍 Snake Game</h1>
+        <h1>🐍 贪吃蛇</h1>
         <div class="score-board">
             <div class="score-item">
-                <div class="score-label">Score</div>
+                <div class="score-label">分数</div>
                 <div class="score-value" id="score">0</div>
             </div>
             <div class="score-item">
-                <div class="score-label">High Score</div>
+                <div class="score-label">最高分</div>
                 <div class="score-value" id="highScore">0</div>
             </div>
             <div class="score-item">
-                <div class="score-label">Speed</div>
+                <div class="score-label">速度</div>
                 <div class="score-value" id="speed">1</div>
             </div>
         </div>
-        <canvas id="gameCanvas" width="500" height="500"></canvas>
+        <canvas id="gameCanvas"></canvas>
         <div class="instructions">
-            Use <span>↑</span> <span>↓</span> <span>←</span> <span>→</span> Arrow Keys to move
+            使用 <span>↑</span> <span>↓</span> <span>←</span> <span>→</span> 方向键控制
+        </div>
+        <div class="start-hint" id="startHint">👆 点击方向按钮开始游戏</div>
+        
+        <!-- Mobile Controls -->
+        <div class="mobile-controls" id="mobileControls">
+            <div class="control-row">
+                <div class="control-btn placeholder"></div>
+                <div class="control-btn" id="btnUp">▲</div>
+                <div class="control-btn placeholder"></div>
+            </div>
+            <div class="control-row">
+                <div class="control-btn" id="btnLeft">◀</div>
+                <div class="control-btn" id="btnDown">▼</div>
+                <div class="control-btn" id="btnRight">▶</div>
+            </div>
         </div>
     </div>
 
     <div class="game-over" id="gameOver">
-        <h2>💀 Game Over!</h2>
-        <div class="final-score">Final Score: <span id="finalScore">0</span></div>
-        <button class="restart-btn" onclick="restartGame()">🔄 Play Again</button>
+        <div class="game-over-content">
+            <h2>💀 游戏结束!</h2>
+            <div class="final-score">最终得分: <span id="finalScore">0</span></div>
+            <button class="restart-btn" onclick="restartGame()">🔄 再来一局</button>
+        </div>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        
+        // Responsive canvas size
+        function resizeCanvas() {
+            const maxSize = Math.min(window.innerWidth - 40, window.innerHeight - 300, 500);
+            const size = Math.floor(maxSize / 20) * 20;
+            canvas.width = size;
+            canvas.height = size;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            if (!isGameRunning) drawGame();
+        });
+
         const gridSize = 20;
-        const tileCount = canvas.width / gridSize;
+        let tileCount;
+
+        function updateTileCount() {
+            tileCount = canvas.width / gridSize;
+        }
+        updateTileCount();
 
         let snake = [];
         let food = {};
@@ -215,10 +329,13 @@
 
         // Initialize game
         function initGame() {
+            updateTileCount();
+            const startX = Math.floor(tileCount / 4);
+            const startY = Math.floor(tileCount / 2);
             snake = [
-                { x: 5, y: 10 },
-                { x: 4, y: 10 },
-                { x: 3, y: 10 }
+                { x: startX, y: startY },
+                { x: startX - 1, y: startY },
+                { x: startX - 2, y: startY }
             ];
             direction = { x: 1, y: 0 };
             nextDirection = { x: 1, y: 0 };
@@ -301,11 +418,9 @@
                 const colorIndex = index % snakeColors.length;
                 const color = snakeColors[colorIndex];
 
-                // Calculate segment size (head is bigger)
                 const size = index === 0 ? gridSize - 2 : gridSize - 4;
                 const offset = index === 0 ? 1 : 2;
 
-                // Draw segment with gradient
                 const segmentGradient = ctx.createLinearGradient(
                     segment.x * gridSize,
                     segment.y * gridSize,
@@ -326,7 +441,6 @@
                 );
                 ctx.fill();
 
-                // Draw glow for head
                 if (index === 0) {
                     ctx.shadowColor = color;
                     ctx.shadowBlur = 15;
@@ -334,31 +448,35 @@
                     ctx.shadowBlur = 0;
 
                     // Draw eyes
-                    const eyeOffset = gridSize / 4;
-                    const eyeSize = 3;
-
+                    const eyeSize = Math.max(2, gridSize / 7);
                     ctx.fillStyle = '#fff';
+                    
+                    let eye1x, eye1y, eye2x, eye2y;
                     if (direction.x === 1) {
-                        ctx.beginPath();
-                        ctx.arc(segment.x * gridSize + gridSize - 5, segment.y * gridSize + eyeOffset + 2, eyeSize, 0, Math.PI * 2);
-                        ctx.arc(segment.x * gridSize + gridSize - 5, segment.y * gridSize + gridSize - eyeOffset - 2, eyeSize, 0, Math.PI * 2);
-                        ctx.fill();
+                        eye1x = segment.x * gridSize + gridSize - 5;
+                        eye1y = segment.y * gridSize + gridSize / 4 + 1;
+                        eye2x = segment.x * gridSize + gridSize - 5;
+                        eye2y = segment.y * gridSize + gridSize - gridSize / 4 - 1;
                     } else if (direction.x === -1) {
-                        ctx.beginPath();
-                        ctx.arc(segment.x * gridSize + 5, segment.y * gridSize + eyeOffset + 2, eyeSize, 0, Math.PI * 2);
-                        ctx.arc(segment.x * gridSize + 5, segment.y * gridSize + gridSize - eyeOffset - 2, eyeSize, 0, Math.PI * 2);
-                        ctx.fill();
+                        eye1x = segment.x * gridSize + 5;
+                        eye1y = segment.y * gridSize + gridSize / 4 + 1;
+                        eye2x = segment.x * gridSize + 5;
+                        eye2y = segment.y * gridSize + gridSize - gridSize / 4 - 1;
                     } else if (direction.y === -1) {
-                        ctx.beginPath();
-                        ctx.arc(segment.x * gridSize + eyeOffset + 2, segment.y * gridSize + 5, eyeSize, 0, Math.PI * 2);
-                        ctx.arc(segment.x * gridSize + gridSize - eyeOffset - 2, segment.y * gridSize + 5, eyeSize, 0, Math.PI * 2);
-                        ctx.fill();
+                        eye1x = segment.x * gridSize + gridSize / 4 + 1;
+                        eye1y = segment.y * gridSize + 5;
+                        eye2x = segment.x * gridSize + gridSize - gridSize / 4 - 1;
+                        eye2y = segment.y * gridSize + 5;
                     } else {
-                        ctx.beginPath();
-                        ctx.arc(segment.x * gridSize + eyeOffset + 2, segment.y * gridSize + gridSize - 5, eyeSize, 0, Math.PI * 2);
-                        ctx.arc(segment.x * gridSize + gridSize - eyeOffset - 2, segment.y * gridSize + gridSize - 5, eyeSize, 0, Math.PI * 2);
-                        ctx.fill();
+                        eye1x = segment.x * gridSize + gridSize / 4 + 1;
+                        eye1y = segment.y * gridSize + gridSize - 5;
+                        eye2x = segment.x * gridSize + gridSize - gridSize / 4 - 1;
+                        eye2y = segment.y * gridSize + gridSize - 5;
                     }
+                    ctx.beginPath();
+                    ctx.arc(eye1x, eye1y, eyeSize, 0, Math.PI * 2);
+                    ctx.arc(eye2x, eye2y, eyeSize, 0, Math.PI * 2);
+                    ctx.fill();
                 }
             });
         }
@@ -384,13 +502,11 @@
                 y: snake[0].y + direction.y
             };
 
-            // Check wall collision
             if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
                 gameOver();
                 return;
             }
 
-            // Check self collision
             if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
                 gameOver();
                 return;
@@ -398,12 +514,10 @@
 
             snake.unshift(head);
 
-            // Check food collision
             if (head.x === food.x && head.y === food.y) {
                 score += 10;
                 createParticles(food.x * gridSize + gridSize / 2, food.y * gridSize + gridSize / 2);
 
-                // Increase speed every 50 points
                 if (score % 50 === 0 && gameSpeed > 50) {
                     gameSpeed -= 15;
                     speedLevel++;
@@ -419,7 +533,6 @@
         }
 
         function createParticles(x, y) {
-            const gameContainer = document.querySelector('.game-container');
             const rect = canvas.getBoundingClientRect();
 
             for (let i = 0; i < 10; i++) {
@@ -460,6 +573,7 @@
         function startGame() {
             if (isGameRunning) return;
             isGameRunning = true;
+            document.getElementById('startHint').style.display = 'none';
             initGame();
             gameLoop = setInterval(gameStep, gameSpeed);
             drawGame();
@@ -476,7 +590,7 @@
             }
 
             document.getElementById('finalScore').textContent = score;
-            document.getElementById('gameOver').style.display = 'block';
+            document.getElementById('gameOver').style.display = 'flex';
         }
 
         function restartGame() {
@@ -510,6 +624,75 @@
                     break;
             }
         });
+
+        // Mobile button controls
+        function handleDirection(dir) {
+            if (!isGameRunning) {
+                startGame();
+                // Set initial direction based on button pressed
+                if (dir === 'up') nextDirection = { x: 0, y: -1 };
+                else if (dir === 'down') nextDirection = { x: 0, y: 1 };
+                else if (dir === 'left') nextDirection = { x: -1, y: 0 };
+                else if (dir === 'right') nextDirection = { x: 1, y: 0 };
+                return;
+            }
+            
+            if (dir === 'up' && direction.y !== 1) nextDirection = { x: 0, y: -1 };
+            else if (dir === 'down' && direction.y !== -1) nextDirection = { x: 0, y: 1 };
+            else if (dir === 'left' && direction.x !== 1) nextDirection = { x: -1, y: 0 };
+            else if (dir === 'right' && direction.x !== -1) nextDirection = { x: 1, y: 0 };
+        }
+
+        document.getElementById('btnUp').addEventListener('touchstart', (e) => { e.preventDefault(); handleDirection('up'); });
+        document.getElementById('btnDown').addEventListener('touchstart', (e) => { e.preventDefault(); handleDirection('down'); });
+        document.getElementById('btnLeft').addEventListener('touchstart', (e) => { e.preventDefault(); handleDirection('left'); });
+        document.getElementById('btnRight').addEventListener('touchstart', (e) => { e.preventDefault(); handleDirection('right'); });
+
+        document.getElementById('btnUp').addEventListener('click', () => handleDirection('up'));
+        document.getElementById('btnDown').addEventListener('click', () => handleDirection('down'));
+        document.getElementById('btnLeft').addEventListener('click', () => handleDirection('left'));
+        document.getElementById('btnRight').addEventListener('click', () => handleDirection('right'));
+
+        // Swipe controls
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+
+        canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].clientX;
+            touchEndY = e.changedTouches[0].clientY;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+            const minSwipe = 30;
+
+            if (Math.abs(dx) < minSwipe && Math.abs(dy) < minSwipe) return;
+
+            if (!isGameRunning) {
+                startGame();
+            }
+
+            if (Math.abs(dx) > Math.abs(dy)) {
+                if (dx > 0 && direction.x !== -1) nextDirection = { x: 1, y: 0 };
+                else if (dx < 0 && direction.x !== 1) nextDirection = { x: -1, y: 0 };
+            } else {
+                if (dy > 0 && direction.y !== -1) nextDirection = { x: 0, y: 1 };
+                else if (dy < 0 && direction.y !== 1) nextDirection = { x: 0, y: -1 };
+            }
+        }
 
         // Initial draw
         initGame();
